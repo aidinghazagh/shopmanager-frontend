@@ -1,5 +1,5 @@
-// lib/main.dart
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'helpers/app_language.dart'; // Import the localization class
 import 'helpers/shared_prefs_helper.dart';
 import 'screens/auth_wrapper.dart'; // Import the AuthWrapper
@@ -11,34 +11,35 @@ Future<void> main() async {
   final savedLanguage = await SharedPrefsHelper.getUserLanguage();
 
   // Initialize the AppLanguage singleton with the saved language
-  AppLanguage().setLanguage(savedLanguage);
+  final appLanguage = AppLanguage();
+  appLanguage.setLanguage(savedLanguage);
 
-  runApp(const ShopManagerApp());
+  runApp(
+    ChangeNotifierProvider<AppLanguage>.value(
+      value: appLanguage,
+      child: const ShopManagerApp(),
+    ),
+  );
 }
 
-
-// Helper method to update the app's locale
-class ShopManagerApp extends StatefulWidget {
+class ShopManagerApp extends StatelessWidget {
   const ShopManagerApp({super.key});
 
   @override
-  State<ShopManagerApp> createState() => _ShopManagerAppState();
-}
-
-class _ShopManagerAppState extends State<ShopManagerApp> {
-
-  @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Shop Manager',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      supportedLocales: const [
-        Locale('en', 'US'), // English
-        Locale('fa', 'IR'), // Farsi
-      ],
-      home: AuthWrapper(),
+    return Consumer<AppLanguage>(
+      builder: (context, appLanguage, child) {
+        return MaterialApp(
+          locale: Locale(appLanguage.languageCode),
+          builder: (context, child) {
+            return Directionality(
+              textDirection: appLanguage.isRtl() ? TextDirection.rtl : TextDirection.ltr,
+              child: child!,
+            );
+          },
+          home: AuthWrapper(),
+        );
+      },
     );
   }
 }

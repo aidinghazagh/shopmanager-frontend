@@ -35,7 +35,7 @@ class CustomTextField extends StatelessWidget {
       decoration: InputDecoration(
         labelText: labelText,
         hintText: hintText,
-        errorText: errorText,
+        errorText: validator?.call(controller!.text),
         filled: true,
         fillColor: Colors.grey[200],
         border: OutlineInputBorder(
@@ -52,6 +52,24 @@ class CustomTextField extends StatelessWidget {
         ),
         contentPadding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
       ),
+      onChanged: (value) {
+        if (controller != null) {
+          controller!.text = convertPersianToEnglish(value);
+          controller!.selection = TextSelection.fromPosition(
+            TextPosition(offset: controller!.text.length),
+          );
+        }
+      },
     );
   }
+}
+
+String convertPersianToEnglish(String input) {
+  const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+  const englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+
+  for (int i = 0; i < persianDigits.length; i++) {
+    input = input.replaceAll(persianDigits[i], englishDigits[i]);
+  }
+  return input;
 }
